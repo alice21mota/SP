@@ -1,11 +1,12 @@
 import sys
-import minizinc
+#import minizinc
 import re
 
 tests = []
 durations = []
 required_resources = []
 available_machines = []
+all_machines = set()
 
 def read_input_file(input_file):
     """Reads the input data from the file and parses it into a suitable format."""
@@ -24,27 +25,18 @@ def parse_input_file(data):
     initial_info = [] #will store number of tests [0], number of machines [1], number of resources [2], makespan [3]
     for line in data:
         #print(line)
-        if line.startswith('%'):
+        while line.startswith('%'):
             match = re.search(r'\d+', line)
             initial_info.append(int(match.group()))
-        else: 
-            parsed_tests = parse_test_data(line)  #parse test data
-            # break
-    
-    # print("Durations:", durations)
-    # print("Available Machines:", available_machines)
-    # print("Required Resources:", required_resources)
-    # print("tests:", parsed_tests)
+            break
+        
+        parsed_tests = parse_test_data(line)  #parse test data
+            
 
     num_tests = initial_info[0]
     num_machines = initial_info[1]
     num_resources = initial_info[2]
-   
-    if len(initial_info) == 4:
-        max_makespan = initial_info[3]
-    #     print(max_makespan)
 
-    # print(initial_info)
     return
 
 def parse_test_data(line):
@@ -56,9 +48,16 @@ def parse_test_data(line):
     if match:
         test_id = match.group(1)
         duration = int(match.group(2))
-        machines = [m.strip() for m in match.group(3).split(',') if m]  # Clean machine list
-        resources = [r.strip() for r in match.group(4).split(',') if r] # Clean resource list   
+        # machines = [m.strip() for m in match.group(3).split(',') if m]  # Clean machine list
+        # resources = [r.strip() for r in match.group(4).split(',') if r] # Clean resource list   
+        # Convert machine list to integers, stripping any extraneous characters
+        machines = [int(m.strip().strip("'\"")[1:]) for m in match.group(3).split(',') if m]
+        # Convert resource list to integers, stripping any extraneous characters
+        resources = [int(r.strip().strip("'\"")[1:]) for r in match.group(4).split(',') if r]
         # print(test_id)
+
+    
+        
     # Append test data as dictionary
         tests.append({
             'test_id': test_id,
@@ -69,6 +68,10 @@ def parse_test_data(line):
         durations.append(duration)
         available_machines.append(machines)
         required_resources.append(resources)
+
+    
+    for i in range(1, len(available_machines) + 1):
+        all_machines.add(i)
     
     return tests
 
@@ -118,11 +121,11 @@ def main():
     output_file = sys.argv[2]
 
     with open(output_file, 'w') as file:
-        file.write("Number of Tests: " + str(len(tests)) + "\n")
-        file.write("Number of Machines: " + str(len(available_machines)) + "\n")
-        file.write("Number of Resources: " + str(len(required_resources)) + "\n")
+        file.write("Number of Tests: " + str(len(tests)) + "\n\n")
+        file.write("Number of Machines: " + str(len(available_machines)) + "\n\n")
+        file.write("All Machines: " + str(all_machines) + "\n\n")
+        file.write("Number of Resources: " + str(len(required_resources)) + "\n\n")
         file.write("Durations: " + str(durations) + "\n")
-        file.write("Tests: " + str(tests) + "\n")
         file.write("Required Resources: " + str(required_resources) + "\n")
         file.write("Available Machines: " + str(available_machines) + "\n")
 
