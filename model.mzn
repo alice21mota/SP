@@ -25,21 +25,9 @@ constraint
   )
   /\
   % Enforce that no two tests overlap on the same machine
-  forall(m in 1..num_machines)(
+  forall(m in 1..num_machines, r in 1..num_resources)(
     forall(t1, t2 in 1..num_tests where t1 < t2)(
-      if selected_machine[t1] == m /\ selected_machine[t2] == m then
-        (start_times[t1] + duration[t1] <= start_times[t2]) \/
-        (start_times[t2] + duration[t2] <= start_times[t1])
-      else
-        true
-      endif
-    )
-  )
-  /\
-  % Ensure that no two tests overlap on the same resource
-  forall(r in 1..num_resources)(
-    forall(t1, t2 in 1..num_tests where t1 < t2)(
-      if (r in required_resources[t1]) /\ (r in required_resources[t2]) then
+      if ((r in required_resources[t1]) /\ (r in required_resources[t2]) \/ (selected_machine[t1] == m /\ selected_machine[t2] == m)) then
         (start_times[t1] + duration[t1] <= start_times[t2]) \/
         (start_times[t2] + duration[t2] <= start_times[t1])
       else
