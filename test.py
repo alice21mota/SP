@@ -99,7 +99,7 @@ def parse_test_data(line):
     return tests
 
 def process_tests():
-    tests.sort(key=lambda x: x['duration'])
+    tests.sort(key=lambda x: x['duration'], reverse=True)
     for test in tests:
         duration = test['duration']
         machines = set(test['machines'])
