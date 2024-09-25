@@ -116,7 +116,7 @@ def process_tests():
             required_resources.append({})
         else: 
             required_resources.append(resources)
-
+    max_time = sum(durations)
 
 def check_command_line_arguments():
     print(sys.argv)
@@ -145,7 +145,8 @@ def main():
 
     with open(output_file, 'w') as file:
         file.write("num_tests = " + str(num_tests) + ";\n")
-        file.write("num_machines = " + str(num_machines) + ";\n\n")
+        file.write("num_machines = " + str(num_machines) + ";\n")
+        file.write("max_time = " + str(sum(durations)) + ";\n\n")
         # file.write("All Machines: " + str(all_machines) + "\n\n")
         file.write("num_resources =" + str(num_resources) + ";\n\n")
         file.write("duration = " + str(durations) + ";\n")
