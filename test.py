@@ -66,8 +66,6 @@ def parse_test_data(line):
         # Convert resource list to integers, stripping any extraneous characters
         resources = set(int(r.strip().strip("'\"")[1:]) for r in match.group(4).split(',') if r)
         # print(test_id)
-
-    
         
     # Append test data as dictionary
         tests.append({
@@ -77,29 +75,17 @@ def parse_test_data(line):
             'resources': resources
         })
 
-        # Sort tests by duration
-        
-
-
-        # durations.append(duration)
-
-        # if machines == set(): 
-        #     available_machines.append(all_machines)
-        # else: available_machines.append(machines)
-
-        # if resources == set():
-        #     required_resources.append({})
-        # else: 
-            
-        #     required_resources.append(resources)
-
     for i in range(1, num_machines + 1):
         all_machines.add(i)
     
     return tests
 
 def process_tests():
-    tests.sort(key=lambda x: x['duration'], reverse=True)
+    tests.sort(key=lambda x: x['resources'], reverse=True)
+    tests.sort(key=lambda x: x['machines'], reverse=True)
+    
+    # tests.sort(key=lambda x: x['resources'], reverse=True)
+    # tests.sort(key=lambda x: x['duration'])
     for test in tests:
         duration = test['duration']
         machines = set(test['machines'])
