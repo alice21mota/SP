@@ -1,6 +1,7 @@
 import sys
-#import minizinc
+import minizinc
 import re
+import time
 
 tests = []
 durations = []
@@ -11,6 +12,8 @@ num_machines = 0
 num_resources = 0
 num_tests = 0
 initial_info = []
+min_time = 0
+max_time = 0
 
 def read_input_file(input_file):
     """Reads the input data from the file and parses it into a suitable format."""
@@ -59,8 +62,6 @@ def parse_test_data(line):
     if match:
         test_id = match.group(1)
         duration = int(match.group(2))
-        # machines = [m.strip() for m in match.group(3).split(',') if m]  # Clean machine list
-        # resources = [r.strip() for r in match.group(4).split(',') if r] # Clean resource list   
         # Convert machine list to integers, stripping any extraneous characters
         machines = set(int(m.strip().strip("'\"")[1:]) for m in match.group(3).split(',') if m)
         # Convert resource list to integers, stripping any extraneous characters
@@ -97,12 +98,13 @@ def process_tests():
             available_machines.append(all_machines)
         else: 
             available_machines.append(machines)
+        
+        required_resources.append(resources)
 
-        if resources == set():
-            required_resources.append({})
-        else: 
-            required_resources.append(resources)
+    global max_time 
     max_time = sum(durations)
+    global min_time 
+    min_time = max(durations)
 
 def check_command_line_arguments():
     print(sys.argv)
@@ -121,23 +123,53 @@ def check_command_line_arguments():
     else: print ("Input and output files are valid.\n")
     
 
+def solve_problem():
+    model = minizinc.Model("model.mzn")
+    #model.add_file("model.mzn")
+
+    solver = minizinc.Solver.lookup("highs")
+    instance = minizinc.Instance(solver, model)
+
+    instance["num_tests"] = num_tests
+    instance["num_machines"] = num_machines
+    instance["num_resources"] = num_resources
+    instance["max_time"] = max_time
+    instance["min_time"] = min_time
+    instance["duration"] = durations
+    instance["required_resources"] = required_resources
+    instance["available_machines"] = available_machines
+
+    # print(f"max_time: {max_time}")
+    # print(f"min_time: {min_time}")
+    # print(f"num_tests: {num_tests}")
+    # print(f"num_machines: {num_machines}")
+    # print(f"num_resources: {num_resources}")
+    # print(f"duration: {durations}")
+    # print(f"required_resources: {required_resources}")
+    # print(f"available_machines: {available_machines}")
+
+
+    result = instance.solve()
+    print(f"Solution: {result}")
+
+
 
 def main():
+    start_time = time.time()
 
     check_command_line_arguments()
     read_input_file(sys.argv[1])
 
     output_file = sys.argv[2]
+    
+    solution = solve_problem()
 
     with open(output_file, 'w') as file:
-        file.write("num_tests = " + str(num_tests) + ";\n")
-        file.write("num_machines = " + str(num_machines) + ";\n")
-        file.write("max_time = " + str(sum(durations)) + ";\n\n")
-        # file.write("All Machines: " + str(all_machines) + "\n\n")
-        file.write("num_resources =" + str(num_resources) + ";\n\n")
-        file.write("duration = " + str(durations) + ";\n")
-        file.write("required_resources = " + str(required_resources) + ";\n")
-        file.write("available_machines = " + str(available_machines) + ";\n")
+        file.write("Solution " + str(solution) + ";\n")
+
+    end_time = time.time()  # Record the end time
+    elapsed_time = end_time - start_time  # Calculate the elapsed time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")  # Print the elapsed time
 
 
 if __name__ == "__main__":
