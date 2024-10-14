@@ -49,11 +49,17 @@ constraint
 % Symmetry breaking
 %constraint forall(t in 1..num_tests - 1)(selected_machine[t] <= selected_machine[t + 1]);
 
-% Search strategy optimization
-solve :: int_search(start_times, first_fail, indomain_min) 
-  minimize makespan;
+% % Search strategy optimization
+% solve :: int_search(start_times ++ end_times, input_order, indomain_min) 
+%   minimize makespan;
 
-% Output
+solve :: seq_search([
+  % int_search(required_resources, dom_w_deg, indomain_min),
+  int_search(selected_machine, first_fail, indomain_random),
+  int_search(start_times ++ end_times, input_order, indomain_min)
+]) minimize makespan;
+
+%Output
 output [
   "Makespan: ", show(makespan), "\n",
   "Start times: ", show(start_times), "\n",
