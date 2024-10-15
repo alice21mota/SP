@@ -120,7 +120,7 @@ def process_tests():
     max_time = sum(durations)
     min_time = calculate_min_time()
 
-def solve_problem():
+def solve_problem(makespan):
     model = minizinc.Model("model.mzn")
     #model.add_file("model.mzn")
 
@@ -128,7 +128,7 @@ def solve_problem():
     instance = minizinc.Instance(solver, model)
 
     instance["num_tests"] = num_tests
-    instance["max_time"] = max_time
+    instance["max_time"] = makespan
     instance["min_time"] = min_time
     instance["num_machines"] = num_machines
     instance["num_resources"] = num_resources
@@ -136,8 +136,29 @@ def solve_problem():
     instance["required_resources"] = required_resources
     instance["available_machines"] = available_machines
 
-    result = instance.solve(free_search=True, timeout=timedelta(seconds=290))
+    result = instance.solve(free_search=True, timeout=timedelta(seconds=30))
     return result
+
+def binary_search_makespan():
+    low = min_time
+    high = max_time
+    optimal_result = None
+
+    while low <= high:
+        mid = (low + high) // 2
+        print(f"Trying makespan: {mid}")
+
+        result = solve_problem(mid)
+
+        if result and result is not None:
+            print(f"Found makespan: {mid}")
+            optimal_result = result
+            high = mid - 1  # Try smaller makespan
+        else:
+            low = mid + 1  # Try larger makespan
+
+    return optimal_result
+
 
 def get_output(result):
     makespan_obtained = result["makespan"]
@@ -182,13 +203,15 @@ def main():
 
     output_file = sys.argv[2]
     
-    result = solve_problem()
+    result = binary_search_makespan()
 
     with open(output_file, 'w') as file:
         file.write(str(get_output(result)) + "\n")
         
     end_time = time.time()  # Record the end time
     elapsed_time = end_time - start_time  # Calculate the elapsed time
+    with open(output_file, 'a') as file:
+        file.write(f"Elapsed time: {elapsed_time:.2f} seconds\n")
     print(f"Elapsed time: {elapsed_time:.2f} seconds") 
 
 if __name__ == "__main__":
