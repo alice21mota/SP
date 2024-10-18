@@ -234,8 +234,6 @@ def write_to_output_file(output_file, result):
             file.write("No solution found.\n")
 
 def main():
-    start_time = time.time()
-
     check_command_line_arguments()
     read_input_file(sys.argv[1])
 
@@ -245,13 +243,6 @@ def main():
     result = binary_search_makespan(time.time())
 
     write_to_output_file(output_file, result)
-        
-    end_time = time.time()
-    # Calculate the elapsed time
-    elapsed_time = end_time - start_time  
-    print(f"Elapsed time: {elapsed_time:.2f} seconds") 
-    with open("times_file.txt", 'a') as file:
-        file.write(f"File name: {sys.argv[1]} \t Elapsed time: {elapsed_time:.2f} seconds\t Makespan: {result['makespan']}\n")
 
 if __name__ == "__main__":
     main()
