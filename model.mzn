@@ -23,17 +23,14 @@ constraint makespan = max([start_times[t] + duration[t] | t in 1..num_tests]);
 constraint 
   forall(t in 1..num_tests)( 
     selected_machine[t] in available_machines[t]
-    %start_times[t] + duration[t] = end_times[t]
   );
 
-% No overlapping tests on the same machine (using no_overlap predicate)
-predicate no_overlap(var int:s1, int:d1, var int:s2, int:d2) =
-    s1 + d1 <= s2 \/ s2 + d2 <= s1;
-
+% No overlapping tests on the same machine
 constraint 
   forall(t1, t2 in 1..num_tests where t1 < t2)(
     selected_machine[t1] == selected_machine[t2] ->
-    no_overlap(start_times[t1], duration[t1], start_times[t2], duration[t2])
+    (start_times[t1] + duration[t1] <= start_times[t2] \/ 
+      start_times[t2] + duration[t2] <= start_times[t1])
   );
 
 % No overlapping tests on the same resource (cumulative constraint)
@@ -47,7 +44,7 @@ constraint
 solve :: seq_search([
   int_search(selected_machine, first_fail, indomain_random),
   int_search(start_times, input_order, indomain_min)
-]) satisfy;
+]) minimize makespan;
 
 % %Output
 output [
